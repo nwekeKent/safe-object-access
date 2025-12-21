@@ -1,7 +1,15 @@
 {
   "name": "safe-object-access",
   "version": "1.0.0",
-  "description": "",
+  "description": "A robust, type-safe utility for safely accessing deeply nested object properties using string paths with full TypeScript autocomplete support.",
+  "keywords": [
+    "typescript",
+    "safe-access",
+    "get",
+    "nested-objects",
+    "type-safe",
+    "path-access"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -21,9 +29,8 @@
   "files": [
     "dist"
   ],
-  "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "devDependencies": {
     "@types/node": "^25.0.2",
