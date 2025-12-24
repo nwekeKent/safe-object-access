@@ -1,5 +1,8 @@
 # safe-object-access
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub](https://img.shields.io/badge/GitHub-nwekeKent%2Fsafe--object--access-blue?logo=github)](https://github.com/nwekeKent/safe-object-access)
+
 A robust, **strongly-typed** TypeScript utility for safely accessing deeply nested object properties using string paths.
 
 ## Features

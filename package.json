@@ -10,6 +10,14 @@
     "type-safe",
     "path-access"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nwekeKent/safe-object-access.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nwekeKent/safe-object-access/issues"
+  },
+  "homepage": "https://github.com/nwekeKent/safe-object-access#readme",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
