@@ -11,6 +11,9 @@ A robust, **strongly-typed** TypeScript utility for safely accessing deeply nest
 - 🎯 **Return Type Inference**: The return value is automatically typed based on the path (no more `any`).
 - 🛡️ **Safe Access**: Prevents crashes when accessing properties on `undefined` or `null`.
 - 📦 **Bracket Notation**: Supports both dot notation (`users.0.name`) and bracket notation (`users[0].name`).
+- ⚡️ **High Performance**: Built-in path memoization for lightning-fast repeated access in React render loops.
+- 🛠️ **Configurable Fallbacks**: Optionally treat `null` or empty strings as missing values.
+- 🔍 **Debug Mode**: Detailed console warnings to pinpoint exactly where path traversal fails.
 - 🚫 **Prototype Protection**: Automatically prevents access to `__proto__`, `constructor`, and `prototype` for security.
 
 ## Installation
@@ -47,6 +50,31 @@ const firstTag = safeGet(user, 'tags[0]');
 // Default values handled correctly
 // inferred type: "dark" | "light"
 const safeTheme = safeGet(user, 'profile.settings.theme', 'light');
+```
+
+### Advanced Usage
+
+You can pass an optional `options` object as the fourth argument to customize how values are retrieved.
+
+#### Handling `null` or Empty Strings
+By default, `safeGet` only uses the default value if the result is `undefined`. Use these flags to handle other "empty" states:
+
+```typescript
+const data = { bio: null, draft: "" };
+
+// Treat null as missing
+const bio = safeGet(data, 'bio', 'No bio yet', { treatNullAsMissing: true });
+
+// Treat empty string as missing
+const draft = safeGet(data, 'draft', 'Start typing...', { treatEmptyStringAsMissing: true });
+```
+
+#### Debugging Paths
+If a path is returning a default value and you don't know why, enable `debug` mode to see exactly where the traversal stopped in the console.
+
+```typescript
+safeGet(user, 'profile.addr.city', 'N/A', { debug: true });
+// Console: [safeGet] Key "addr" does not exist on object.
 ```
 
 ### Usage with React
@@ -88,10 +116,28 @@ const UserBio = ({ data }: { data: UserData }) => {
 
 ## API
 
-### `safeGet<T, P>(obj, path, defaultValue?)`
+### `safeGet<T, P>(obj, path, defaultValue?, options?)`
 
 - **`obj`**: The source object.
-- **`path`**: A string representing the path (e.g., `'a.b.c'` or `'a[0].b'`). strictly typed to conform to `T`.
+- **`path`**: A string representing the path (e.g., `'a.b.c'` or `'a[0].b'`). Strictly typed to conform to `T`.
 - **`defaultValue`** (optional): A value to return if the resolution fails or returns `undefined`.
+- **`options`** (optional):
+    - **`treatNullAsMissing`**: (boolean) If `true`, returns `defaultValue` when the resolved value is `null`.
+    - **`treatEmptyStringAsMissing`**: (boolean) If `true`, returns `defaultValue` when the resolved value is `""`.
+    - **`debug`**: (boolean) If `true`, logs helpful debugging information to the console if the traversal fails.
 
 Returns the value at the path (strictly typed) or the default value.
+
+## 🤝 Contributing
+
+Found a bug or have a feature request?
+
+1.  **Fork** the GitHub Repository.
+2.  **Create** your feature branch (`git checkout -b feature/AmazingFeature`).
+3.  **Commit** your changes (`git commit -m 'Add some AmazingFeature'`).
+4.  **Push** to the branch (`git push origin feature/AmazingFeature`).
+5.  **Open** a Pull Request.
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.

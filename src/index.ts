@@ -27,29 +27,57 @@ export type PathValue<
 	? T[P]
 	: never;
 
+export interface SafeGetOptions {
+	treatNullAsMissing?: boolean;
+	treatEmptyStringAsMissing?: boolean;
+	debug?: boolean;
+}
+
+const pathCache = new Map<string, string[]>();
+
 export function safeGet<T, P extends Path<T>>(
 	obj: T,
 	path: P,
-	defaultValue: PathValue<T, P>
+	defaultValue: PathValue<T, P>,
+	options?: SafeGetOptions
 ): PathValue<T, P>;
 
 export function safeGet<T, P extends Path<T>>(
 	obj: T,
-	path: P
+	path: P,
+	defaultValue?: undefined,
+	options?: SafeGetOptions
 ): PathValue<T, P> | undefined;
 
-export function safeGet(obj: any, path: string, defaultValue?: any): any;
+export function safeGet(
+	obj: any,
+	path: string,
+	defaultValue?: any,
+	options?: SafeGetOptions
+): any;
 
-export function safeGet(obj: any, path: string, defaultValue?: any) {
+export function safeGet(
+	obj: any,
+	path: string,
+	defaultValue?: any,
+	options: SafeGetOptions = {}
+) {
 	if (!obj || typeof obj !== "object") {
+		if (options.debug) {
+			console.warn(`[safeGet] Target object is not an object:`, obj);
+		}
 		return defaultValue;
 	}
 
-	const keys = path
-		.replace(/\[/g, ".")
-		.replace(/['"\]]/g, "")
-		.split(".")
-		.filter(Boolean);
+	let keys = pathCache.get(path);
+	if (!keys) {
+		keys = path
+			.replace(/\[/g, ".")
+			.replace(/['"\]]/g, "")
+			.split(".")
+			.filter(Boolean);
+		pathCache.set(path, keys);
+	}
 
 	let current: any = obj;
 
@@ -59,15 +87,36 @@ export function safeGet(obj: any, path: string, defaultValue?: any) {
 			current === undefined ||
 			typeof current !== "object"
 		) {
+			if (options.debug) {
+				console.warn(
+					`[safeGet] Stopped at key "${key}" because current value is`,
+					current
+				);
+			}
 			return defaultValue;
 		}
 
 		if (Object.hasOwn(current, key)) {
 			current = current[key];
 		} else {
+			if (options.debug) {
+				console.warn(`[safeGet] Key "${key}" does not exist on object.`);
+			}
 			return defaultValue;
 		}
 	}
 
-	return current === undefined ? defaultValue : current;
+	if (current === undefined) {
+		return defaultValue;
+	}
+
+	if (current === null && options.treatNullAsMissing) {
+		return defaultValue;
+	}
+
+	if (current === "" && options.treatEmptyStringAsMissing) {
+		return defaultValue;
+	}
+
+	return current;
 }

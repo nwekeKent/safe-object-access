@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { safeGet } from "./index";
 
 describe("safeGet", () => {
@@ -73,5 +73,76 @@ describe("safeGet", () => {
 		const obj = { a: { b: undefined } };
 		expect(safeGet(obj, "a.b")).toBeUndefined();
 		expect(safeGet(obj, "a.b", "fallback")).toBe("fallback");
+	});
+
+	describe("treatNullAsMissing option", () => {
+		const obj = { user: { bio: null } };
+
+		it("returns null by default when value is null", () => {
+			expect(safeGet(obj, "user.bio", "default")).toBeNull();
+		});
+
+		it("returns default value when treatNullAsMissing is true", () => {
+			expect(
+				safeGet(obj, "user.bio", "default", { treatNullAsMissing: true })
+			).toBe("default");
+		});
+	});
+
+	describe("treatEmptyStringAsMissing option", () => {
+		const obj = { user: { bio: "" } };
+
+		it("returns empty string by default when value is empty string", () => {
+			expect(safeGet(obj, "user.bio", "default")).toBe("");
+		});
+
+		it("returns default value when treatEmptyStringAsMissing is true", () => {
+			expect(
+				safeGet(obj, "user.bio", "default", { treatEmptyStringAsMissing: true })
+			).toBe("default");
+		});
+	});
+
+	describe("debug option", () => {
+		it("warns when target is not an object", () => {
+			const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+			safeGet(null, "a.b", "default", { debug: true });
+			expect(spy).toHaveBeenCalledWith(
+				expect.stringContaining("Target object is not an object"),
+				null
+			);
+			spy.mockRestore();
+		});
+
+		it("warns when traversal stops early", () => {
+			const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+			const obj = { a: null };
+			safeGet(obj, "a.b", "default", { debug: true });
+			expect(spy).toHaveBeenCalledWith(
+				expect.stringContaining('Stopped at key "b"'),
+				null
+			);
+			spy.mockRestore();
+		});
+
+		it("warns when key does not exist", () => {
+			const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+			const obj = { a: {} };
+			safeGet(obj, "a.b", "default", { debug: true });
+			expect(spy).toHaveBeenCalledWith(
+				expect.stringContaining('Key "b" does not exist')
+			);
+			spy.mockRestore();
+		});
+	});
+
+	describe("memoization", () => {
+		it("returns correct value on repeated calls", () => {
+			const obj = { a: { b: 1 } };
+			// First call (cache miss)
+			expect(safeGet(obj, "a.b")).toBe(1);
+			// Second call (cache hit)
+			expect(safeGet(obj, "a.b")).toBe(1);
+		});
 	});
 });
