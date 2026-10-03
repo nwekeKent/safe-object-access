@@ -1,7 +1,7 @@
 {
 	"name": "safe-object-access",
 	"version": "1.1.0",
-	"description": "A robust, type-safe utility for safely accessing deeply nested object properties using string paths with full TypeScript autocomplete support.",
+	"description": "Type-safe, prototype-safe get, has and set for deeply nested objects using string paths, with autocomplete, typed results and runtime guards.",
 	"keywords": [
 		"typescript",
 		"javascript",

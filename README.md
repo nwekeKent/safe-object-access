@@ -1,7 +1,14 @@
 # safe-object-access
 
+[![npm version](https://img.shields.io/npm/v/safe-object-access?logo=npm)](https://www.npmjs.com/package/safe-object-access)
+[![npm downloads (total)](https://img.shields.io/npm/dt/safe-object-access?logo=npm&label=downloads%20total)](https://www.npmjs.com/package/safe-object-access)
+[![npm downloads (monthly)](https://img.shields.io/npm/dm/safe-object-access?label=downloads%2Fmonth)](https://www.npmjs.com/package/safe-object-access)
+[![CI](https://github.com/nwekeKent/safe-object-access/actions/workflows/ci.yml/badge.svg)](https://github.com/nwekeKent/safe-object-access/actions/workflows/ci.yml)
+[![Bundle size](https://img.shields.io/bundlephobia/minzip/safe-object-access?label=minzipped)](https://bundlephobia.com/package/safe-object-access)
+[![Types: included](https://img.shields.io/npm/types/safe-object-access)](https://www.npmjs.com/package/safe-object-access)
+[![Node version](https://img.shields.io/node/v/safe-object-access)](https://www.npmjs.com/package/safe-object-access)
+[![GitHub stars](https://img.shields.io/github/stars/nwekeKent/safe-object-access?logo=github)](https://github.com/nwekeKent/safe-object-access)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub](https://img.shields.io/badge/GitHub-nwekeKent%2Fsafe--object--access-blue?logo=github)](https://github.com/nwekeKent/safe-object-access)
 
 A robust, **strongly-typed** TypeScript utility for safely accessing deeply nested object properties using string paths.
 
