@@ -1,13 +1,15 @@
 # Changelog
 
-## Unreleased
+## 2.0.0 - 2026-10-03
 
-### Breaking (types only)
+### Breaking
 
 - Literal paths that do not exist on the object type are now compile errors.
   Previously a typo such as `safeGet(user, "profle.name")` silently fell through
   to an untyped `any` overload. Non-literal `string` paths still compile and are
   typed `any`.
+- Empty paths (`safeGet(obj, "")`) now return the default instead of the whole
+  object.
 - With a default value, the return type no longer includes `undefined`
   (or `null` when `treatNullAsMissing: true`).
 
