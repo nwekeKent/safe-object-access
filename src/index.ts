@@ -86,7 +86,18 @@ export interface SafeGetOptions {
 	treatNullAsMissing?: boolean;
 	treatEmptyStringAsMissing?: boolean;
 	debug?: boolean;
+	/**
+	 * Runtime check applied to the resolved value. When it returns `false` the
+	 * default value is returned instead. Use a type guard to narrow the
+	 * result type.
+	 */
+	guard?: (value: unknown) => boolean;
 }
+
+/** `SafeGetOptions` with a type guard, which narrows the result type. */
+export type GuardedOptions<G> = SafeGetOptions & {
+	guard: (value: unknown) => value is G;
+};
 
 /** `P` if it names a valid path into `T` (dot or bracket notation), else `never`. */
 export type ValidPath<T, P extends string> =
@@ -102,6 +113,21 @@ export type Resolved<V, O extends SafeGetOptions> = O extends {
 export interface SafeHasOptions {
 	debug?: boolean;
 }
+
+// Guarded lookups: the result is narrowed to the guard's type.
+export function safeGet<T, P extends string, G>(
+	obj: T,
+	path: ValidPath<T, P>,
+	defaultValue: G,
+	options: GuardedOptions<G>,
+): G;
+
+export function safeGet<T, P extends string, G>(
+	obj: T,
+	path: ValidPath<T, P>,
+	defaultValue: undefined,
+	options: GuardedOptions<G>,
+): G | undefined;
 
 // Dot-notation paths (autocomplete).
 export function safeGet<
@@ -173,6 +199,13 @@ export function safeGet(
 	}
 
 	if (value === "" && options.treatEmptyStringAsMissing) {
+		return defaultValue;
+	}
+
+	if (options.guard && !options.guard(value)) {
+		if (options.debug) {
+			console.warn(`[safeGet] Guard rejected value at "${path}":`, value);
+		}
 		return defaultValue;
 	}
 

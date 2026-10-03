@@ -73,6 +73,20 @@ const draft = safeGet(data, "draft", "Start typing...", {
 });
 ```
 
+#### Validating Values with `guard`
+
+Data from APIs or a CMS often has the right shape but the wrong type. Pass a `guard` to check the value at runtime; if it fails you get the default instead. A type guard also narrows the result type.
+
+```typescript
+const isString = (v: unknown): v is string => typeof v === "string";
+
+// data.user.name is `unknown` or maybe a number at runtime
+const name = safeGet(data, "user.name", "anonymous", { guard: isString });
+// inferred type: string
+```
+
+The guard runs after the `undefined`/`null`/empty-string checks, and is not called for missing paths.
+
 #### Debugging Paths
 
 If a path is returning a default value and you don't know why, enable `debug` mode to see exactly where the traversal stopped in the console.

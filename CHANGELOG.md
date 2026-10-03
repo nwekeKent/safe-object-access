@@ -24,6 +24,8 @@
 
 ### Added
 
+- `guard` option for `safeGet`: a runtime check on the resolved value. When it
+  fails the default is returned; a type guard narrows the result type.
 - `safeHas(obj, path)`: true when the path exists as own properties, even if the
   value is `undefined` or `null`.
 - Typed bracket-notation paths (`children[0].id`).
