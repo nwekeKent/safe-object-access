@@ -181,4 +181,94 @@ describe("safeGet", () => {
 			expect(safeGet(obj, "list.0.1")).toBe(2);
 		});
 	});
+
+	describe("prototype safety", () => {
+		const obj = { a: { b: 1 } };
+
+		it.each([
+			"__proto__",
+			"__proto__.polluted",
+			"constructor",
+			"constructor.prototype",
+			"a.__proto__",
+			"a.constructor.name",
+			"a['__proto__']",
+			"toString",
+			"hasOwnProperty",
+		])("does not resolve %s", (path) => {
+			expect(safeGet(obj, path, "D")).toBe("D");
+		});
+
+		it("never mutates Object.prototype", () => {
+			safeGet(obj, "__proto__.polluted", "D");
+			expect(({} as any).polluted).toBeUndefined();
+		});
+
+		it("still reads own properties that shadow prototype names", () => {
+			const shadow = { constructor: "mine", toString: 1 };
+			expect(safeGet(shadow, "constructor")).toBe("mine");
+			expect(safeGet(shadow, "toString")).toBe(1);
+		});
+
+		it("works on null-prototype objects", () => {
+			const bare = Object.assign(Object.create(null), { x: { y: 2 } });
+			expect(safeGet(bare, "x.y")).toBe(2);
+		});
+	});
+
+	describe("non-plain values", () => {
+		it("does not traverse into functions, strings or Dates", () => {
+			const obj = { fn: () => 1, str: "abc", date: new Date(0) };
+			expect(safeGet(obj, "fn.name", "D")).toBe("D");
+			expect(safeGet(obj, "str.length", "D")).toBe("D");
+			expect(safeGet(obj, "str.0", "D")).toBe("D");
+			expect(safeGet(obj, "date.getTime", "D")).toBe("D");
+		});
+
+		it("returns such values when they are the target", () => {
+			const date = new Date(0);
+			expect(safeGet({ date }, "date")).toBe(date);
+			expect(safeGet({ list: [1] }, "list.length")).toBe(1);
+		});
+
+		it("does not read inherited class members", () => {
+			class User {
+				name = "own";
+				get upper() {
+					return "GETTER";
+				}
+			}
+			expect(safeGet(new User(), "name")).toBe("own");
+			expect(safeGet(new User(), "upper", "D")).toBe("D");
+		});
+
+		it("returns the default for non-string paths", () => {
+			expect(safeGet({ a: 1 }, undefined as any, "D")).toBe("D");
+			expect(safeGet({ a: 1 }, 5 as any, "D")).toBe("D");
+		});
+	});
+
+	describe("options combined", () => {
+		const obj = { a: null, b: "", c: 0, d: false };
+
+		it("treats other falsy values as present", () => {
+			const opts = { treatNullAsMissing: true, treatEmptyStringAsMissing: true };
+			expect(safeGet(obj, "c", "D", opts)).toBe(0);
+			expect(safeGet(obj, "d", "D", opts)).toBe(false);
+		});
+
+		it("applies both flags together", () => {
+			const opts = { treatNullAsMissing: true, treatEmptyStringAsMissing: true };
+			expect(safeGet(obj, "a", "D", opts)).toBe("D");
+			expect(safeGet(obj, "b", "D", opts)).toBe("D");
+		});
+
+		it("does not warn when debug is off", () => {
+			const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+			safeGet(obj, "x.y", "D");
+			safeGet(null, "x", "D");
+			expect(spy).not.toHaveBeenCalled();
+			spy.mockRestore();
+		});
+	});
 });

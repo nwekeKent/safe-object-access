@@ -101,6 +101,14 @@ const UserBio = ({ data }: { data: UserData }) => {
 };
 ```
 
+### What `safeGet` reads
+
+Only **own, enumerable-or-not properties of objects and arrays** are read. This keeps lookups safe from prototype pollution, but it means:
+
+- `__proto__`, `constructor`, `prototype` and other inherited members (including class getters and methods) resolve to the default value.
+- Functions, strings, `Date`, `Map` and `Set` are not traversed into (`'name.length'` on a string returns the default). They can be returned when they are the final target.
+- Own properties that happen to be named `constructor` or `toString` are read normally.
+
 ## When to use vs. Optional Chaining
 
 | Feature | `safeGet(obj, 'path.to.key')` | Optional Chaining (`obj?.path?.to?.key`) |
