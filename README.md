@@ -172,6 +172,17 @@ safeHas(data, "a.b"); // true
 safeHas(data, "a.c"); // false
 ```
 
+### `safeGetOrThrow<T, P>(obj, path, options?)`
+
+Like `safeGet` without a default: if the path is missing or the value is unusable it throws a `SafeGetError` (with a `path` property) that says where resolution failed. Takes the same `treatNullAsMissing`, `treatEmptyStringAsMissing` and `guard` options, and the return type never includes `undefined`. Useful for config loading, tests, and anywhere a missing value is a bug.
+
+```typescript
+import { safeGetOrThrow, SafeGetError } from "safe-object-access";
+
+const port = safeGetOrThrow(config, "db.port"); // number, or throws
+// SafeGetError: [safeGetOrThrow] Cannot resolve "db.host": Key "host" does not exist on object.
+```
+
 ## 🤝 Contributing
 
 Found a bug or have a feature request?

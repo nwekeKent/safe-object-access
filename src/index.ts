@@ -1,4 +1,4 @@
-import { resolvePath, warn } from "./resolve";
+import { lookupValue, resolvePath, warn } from "./resolve";
 
 type Primitive =
 	| string
@@ -181,35 +181,10 @@ export function safeGet(
 	defaultValue?: any,
 	options: SafeGetOptions = {},
 ) {
-	const resolution = resolvePath(obj, path);
-
-	if (!resolution.found) {
-		if (options.debug) warn("safeGet", resolution);
-		return defaultValue;
-	}
-
-	const { value } = resolution;
-
-	if (value === undefined) {
-		return defaultValue;
-	}
-
-	if (value === null && options.treatNullAsMissing) {
-		return defaultValue;
-	}
-
-	if (value === "" && options.treatEmptyStringAsMissing) {
-		return defaultValue;
-	}
-
-	if (options.guard && !options.guard(value)) {
-		if (options.debug) {
-			console.warn(`[safeGet] Guard rejected value at "${path}":`, value);
-		}
-		return defaultValue;
-	}
-
-	return value;
+	const result = lookupValue(obj, path, options);
+	if (result.found) return result.value;
+	if (options.debug && !result.quiet) warn("safeGet", result);
+	return defaultValue;
 }
 
 // Dot-notation paths (autocomplete).
@@ -246,4 +221,64 @@ export function safeHas(
 	const resolution = resolvePath(obj, path);
 	if (!resolution.found && options.debug) warn("safeHas", resolution);
 	return resolution.found;
+}
+
+/** Thrown by `safeGetOrThrow` when the path does not resolve to a usable value. */
+export class SafeGetError extends Error {
+	readonly path: string;
+
+	constructor(path: string, reason: string) {
+		super(`[safeGetOrThrow] Cannot resolve "${path}": ${reason}`);
+		this.name = "SafeGetError";
+		this.path = path;
+	}
+}
+
+// Guarded lookups: the result is narrowed to the guard's type.
+export function safeGetOrThrow<T, P extends string, G>(
+	obj: T,
+	path: ValidPath<T, P>,
+	options: GuardedOptions<G>,
+): G;
+
+export function safeGetOrThrow<
+	T,
+	P extends string,
+	O extends SafeGetOptions = SafeGetOptions,
+>(
+	obj: T,
+	path: ValidPath<T, P>,
+	options?: O,
+): Resolved<PathValue<T, NormalizePath<P>>, O>;
+
+// Dynamic (non-literal) paths cannot be checked at compile time.
+export function safeGetOrThrow<P extends string>(
+	obj: any,
+	path: string extends P ? P : never,
+	options?: SafeGetOptions,
+): any;
+
+/**
+ * Like `safeGet`, but throws a `SafeGetError` instead of returning a default
+ * when the path is missing or the value is unusable (`undefined`, opted-in
+ * `null`/`""`, or rejected by `guard`). The return type never includes
+ * `undefined`.
+ */
+export function safeGetOrThrow(
+	obj: any,
+	path: string,
+	options: SafeGetOptions = {},
+) {
+	const result = lookupValue(obj, path, options);
+	if (result.found) return result.value;
+	const detail = "detail" in result ? ` ${describe(result.detail)}` : "";
+	throw new SafeGetError(String(path), `${result.reason}${detail}`);
+}
+
+function describe(value: unknown): string {
+	try {
+		return typeof value === "string" ? JSON.stringify(value) : String(value);
+	} catch {
+		return Object.prototype.toString.call(value);
+	}
 }

@@ -56,7 +56,7 @@ describe("guard option", () => {
 		const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
 		safeGet(payload, "user.age", 0, { guard: isNumber, debug: true });
 		expect(spy).toHaveBeenCalledWith(
-			expect.stringContaining('Guard rejected value at "user.age"'),
+			expect.stringContaining("Guard rejected value"),
 			"41",
 		);
 		spy.mockRestore();

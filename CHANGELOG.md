@@ -24,6 +24,8 @@
 
 ### Added
 
+- `safeGetOrThrow(obj, path, options?)` and `SafeGetError`: like `safeGet` but throws
+  with the failing path and reason; the return type never includes `undefined`.
 - `guard` option for `safeGet`: a runtime check on the resolved value. When it
   fails the default is returned; a type guard narrows the result type.
 - `safeHas(obj, path)`: true when the path exists as own properties, even if the
