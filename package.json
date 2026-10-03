@@ -61,7 +61,7 @@
 	"files": [
 		"dist"
 	],
-	"author": "",
+	"author": "Tochukwu Nweke",
 	"license": "MIT",
 	"type": "commonjs",
 	"devDependencies": {
