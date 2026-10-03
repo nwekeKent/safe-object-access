@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # vitest 4 needs Node 20+; older runtimes are covered by the smoke test below.
+        node-version: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm run test:coverage
+      - run: npm run build
+      # The package declares engines.node >= 16.9, so check the built output
+      # loads and works on the oldest supported runtimes.
+      - name: Smoke test built package on Node 16
+        if: matrix.node-version == 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16
+      - name: Run smoke test (Node 16)
+        if: matrix.node-version == 22
+        run: node scripts/smoke.cjs
+      - name: Smoke test built package on Node 18
+        if: matrix.node-version == 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Run smoke test (Node 18)
+        if: matrix.node-version == 22
+        run: node scripts/smoke.cjs
