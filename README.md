@@ -10,7 +10,8 @@ A robust, **strongly-typed** TypeScript utility for safely accessing deeply nest
 - 🔒 **Type-Safe Paths**: TypeScript validates your string paths against the object's shape (autocomplete supported!).
 - 🎯 **Return Type Inference**: The return value is automatically typed based on the path (no more `any`).
 - 🛡️ **Safe Access**: Prevents crashes when accessing properties on `undefined` or `null`.
-- 📦 **Bracket Notation**: Supports both dot notation (`users.0.name`) and bracket notation (`users[0].name`).
+- 📦 **Bracket Notation**: Supports both dot notation (`users.0.name`) and bracket notation (`users[0].name`), both validated against your types.
+- 🌳 **Optional, Nullable & Recursive Types**: Paths traverse optional/nullable properties and recursive types (depth-capped at 10).
 - ⚡️ **High Performance**: Built-in path memoization for lightning-fast repeated access in React render loops.
 - 🛠️ **Configurable Fallbacks**: Optionally treat `null` or empty strings as missing values.
 - 🔍 **Debug Mode**: Detailed console warnings to pinpoint exactly where path traversal fails.
@@ -131,6 +132,8 @@ const UserBio = ({ data }: { data: UserData }) => {
     - **`debug`**: (boolean) If `true`, logs helpful debugging information to the console if the traversal fails.
 
 Returns the value at the path (strictly typed) or the default value.
+
+With a default, the return type excludes `undefined` (and `null` when `treatNullAsMissing: true`). Literal paths that don't exist on `T` are compile errors; non-literal `string` paths are accepted and typed as `any`.
 
 ## 🤝 Contributing
 

@@ -1,5 +1,15 @@
 import { describe, it, expect, vi } from "vitest";
-import { safeGet } from "./index";
+import { safeGet as typedSafeGet, type SafeGetOptions } from "./index";
+
+// These tests exercise runtime behaviour with deliberately invalid or dynamic
+// paths, so they use an untyped view of the function. Compile-time behaviour
+// is covered in types.test.ts.
+const safeGet = typedSafeGet as (
+	obj: any,
+	path: string,
+	defaultValue?: any,
+	options?: SafeGetOptions
+) => any;
 
 describe("safeGet", () => {
 	const testObj = {
