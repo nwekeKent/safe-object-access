@@ -183,6 +183,25 @@ const port = safeGetOrThrow(config, "db.port"); // number, or throws
 // SafeGetError: [safeGetOrThrow] Cannot resolve "db.host": Key "host" does not exist on object.
 ```
 
+### `safeSet<T, P>(obj, path, value)`
+
+Immutable, typed counterpart to `safeGet`. Returns a copy of `obj` with `value` at `path`; the original is never mutated and untouched branches are shared, so unchanged references stay `===` (handy for React state). If the value is already there, `obj` itself is returned.
+
+```typescript
+import { safeSet } from "safe-object-access";
+
+const next = safeSet(state, "user.profile.name", "Bob"); // value type-checked against the path
+safeSet({}, "a.b[0].c", 1); // { a: { b: [{ c: 1 }] } }
+```
+
+Missing intermediates are created: an array when the next key is an index, otherwise an object. `safeSet` throws a `SafeSetError` (with a `path` property) instead of doing something surprising:
+
+- keys `__proto__`, `constructor` or `prototype` anywhere in the path
+- malformed paths, or a target that is not an object
+- an intermediate that holds a string, number or other primitive (it won't overwrite it; `null`/`undefined` are replaced)
+- array indices that would leave gaps (appending at `length` is fine) or non-index keys on arrays
+- class instances, `Date`, `Map` and other non-plain objects on the path, which can't be copied faithfully
+
 ## 🤝 Contributing
 
 Found a bug or have a feature request?

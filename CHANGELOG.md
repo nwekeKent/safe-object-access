@@ -24,6 +24,10 @@
 
 ### Added
 
+- `safeSet(obj, path, value)` and `SafeSetError`: typed, immutable set with
+  structural sharing. Creates missing intermediates and rejects `__proto__`,
+  `constructor` and `prototype` keys, malformed paths, array gaps and class
+  instances.
 - `safeGetOrThrow(obj, path, options?)` and `SafeGetError`: like `safeGet` but throws
   with the failing path and reason; the return type never includes `undefined`.
 - `guard` option for `safeGet`: a runtime check on the resolved value. When it

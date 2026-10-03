@@ -1,4 +1,7 @@
 import { lookupValue, resolvePath, warn } from "./resolve";
+import { setPath } from "./set";
+
+export { SafeSetError } from "./set";
 
 type Primitive =
 	| string
@@ -281,4 +284,38 @@ function describe(value: unknown): string {
 	} catch {
 		return Object.prototype.toString.call(value);
 	}
+}
+
+// Dot-notation paths (autocomplete).
+export function safeSet<T, P extends string & Path<T>>(
+	obj: T,
+	path: P,
+	value: PathValue<T, P>,
+): T;
+
+// Paths using bracket notation, validated against `T`.
+export function safeSet<T, P extends string>(
+	obj: T,
+	path: ValidPath<T, P>,
+	value: PathValue<T, NormalizePath<P>>,
+): T;
+
+// Dynamic (non-literal) paths cannot be checked at compile time.
+export function safeSet<T, P extends string>(
+	obj: T,
+	path: string extends P ? P : never,
+	value: unknown,
+): T;
+
+/**
+ * Immutable counterpart to `safeGet`: returns a copy of `obj` with `value` set
+ * at `path`, creating missing intermediates (an array when the next key is an
+ * index, otherwise an object). Untouched branches are shared with the
+ * original, and `obj` itself is returned when nothing changes.
+ *
+ * Throws `SafeSetError` for `__proto__`/`constructor`/`prototype` keys,
+ * malformed paths, non-object targets, array gaps, and class instances.
+ */
+export function safeSet(obj: any, path: string, value: unknown) {
+	return setPath(obj, path, value);
 }
