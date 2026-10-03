@@ -145,4 +145,40 @@ describe("safeGet", () => {
 			expect(safeGet(obj, "a.b")).toBe(1);
 		});
 	});
+
+	describe("path syntax", () => {
+		const obj = { a: { "b.c": 1, "": 5, "it's": 2 }, list: [[1, 2]] };
+
+		it("reaches keys containing dots via escapes or quoted brackets", () => {
+			expect(safeGet(obj, "a.b\\.c", "D")).toBe(1);
+			expect(safeGet(obj, 'a["b.c"]', "D")).toBe(1);
+			expect(safeGet(obj, "a['it\\'s']", "D")).toBe(2);
+		});
+
+		it("reaches empty-string keys only via quoted brackets", () => {
+			expect(safeGet(obj, "a['']", "D")).toBe(5);
+			expect(safeGet(obj, "a.", "D")).toBe("D");
+		});
+
+		it("returns the default for malformed paths", () => {
+			expect(safeGet(obj, "", "D")).toBe("D");
+			expect(safeGet(obj, "a..b", "D")).toBe("D");
+			expect(safeGet(obj, "list[0", "D")).toBe("D");
+		});
+
+		it("warns about malformed paths in debug mode", () => {
+			const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+			safeGet(obj, "a..b", "D", { debug: true });
+			expect(spy).toHaveBeenCalledWith(
+				expect.stringContaining("Malformed path"),
+				"a..b"
+			);
+			spy.mockRestore();
+		});
+
+		it("handles nested arrays", () => {
+			expect(safeGet(obj, "list[0][1]")).toBe(2);
+			expect(safeGet(obj, "list.0.1")).toBe(2);
+		});
+	});
 });

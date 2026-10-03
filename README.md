@@ -119,7 +119,11 @@ const UserBio = ({ data }: { data: UserData }) => {
 ### `safeGet<T, P>(obj, path, defaultValue?, options?)`
 
 - **`obj`**: The source object.
-- **`path`**: A string representing the path (e.g., `'a.b.c'` or `'a[0].b'`). Strictly typed to conform to `T`.
+- **`path`**: A string representing the path (e.g., `'a.b.c'` or `'a[0].b'`). Strictly typed to conform to `T`. Supported syntax:
+    - dot segments (`a.b`) and bracket indices (`a[0]`)
+    - quoted bracket keys for special characters (`a["b.c"]`, `a['it\'s']`)
+    - backslash escapes (`a\.b` is the single key `a.b`)
+    - empty segments (`""`, `a..b`, `a.`, `a[]`) are malformed and return `defaultValue`; use `a['']` to reach an empty-string key.
 - **`defaultValue`** (optional): A value to return if the resolution fails or returns `undefined`.
 - **`options`** (optional):
     - **`treatNullAsMissing`**: (boolean) If `true`, returns `defaultValue` when the resolved value is `null`.

@@ -1,3 +1,5 @@
+import { parsePath } from "./parse-path";
+
 type Primitive = string | number | boolean | null | undefined | symbol | Date;
 
 export type Path<T> = T extends Primitive
@@ -33,7 +35,7 @@ export interface SafeGetOptions {
 	debug?: boolean;
 }
 
-const pathCache = new Map<string, string[]>();
+const pathCache = new Map<string, string[] | null>();
 
 export function safeGet<T, P extends Path<T>>(
 	obj: T,
@@ -70,13 +72,16 @@ export function safeGet(
 	}
 
 	let keys = pathCache.get(path);
-	if (!keys) {
-		keys = path
-			.replace(/\[/g, ".")
-			.replace(/['"\]]/g, "")
-			.split(".")
-			.filter(Boolean);
+	if (keys === undefined) {
+		keys = typeof path === "string" ? parsePath(path) : null;
 		pathCache.set(path, keys);
+	}
+
+	if (keys === null) {
+		if (options.debug) {
+			console.warn(`[safeGet] Malformed path:`, path);
+		}
+		return defaultValue;
 	}
 
 	let current: any = obj;
