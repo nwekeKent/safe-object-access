@@ -19,13 +19,11 @@
     "angular",
     "svelte",
     "ember",
-    "react",
     "nextjs",
     "nuxtjs",
     "sveltekit",
     "astro",
     "remix"
-    
   ],
   "repository": {
     "type": "git",
@@ -40,16 +38,23 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
     }
   },
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run build"
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "files": [
     "dist"
@@ -59,8 +64,13 @@
   "type": "commonjs",
   "devDependencies": {
     "@types/node": "^25.0.2",
+    "@vitest/coverage-v8": "^4.0.15",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^4.0.15"
+  },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=16.9"
   }
 }
