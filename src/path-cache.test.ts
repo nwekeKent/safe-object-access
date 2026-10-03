@@ -14,7 +14,7 @@ const safeGet = typedSafeGet as (
 	obj: any,
 	path: string,
 	defaultValue?: any,
-	options?: SafeGetOptions
+	options?: SafeGetOptions,
 ) => any;
 
 describe("path cache", () => {

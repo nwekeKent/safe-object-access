@@ -37,7 +37,9 @@ describe("types", () => {
 	});
 
 	it("supports recursive types without hitting the compiler limit", () => {
-		expectTypeOf(safeGet(n, "children.0.children.0.id", 1)).toEqualTypeOf<number>();
+		expectTypeOf(
+			safeGet(n, "children.0.children.0.id", 1),
+		).toEqualTypeOf<number>();
 	});
 
 	it("supports records and tuples", () => {
@@ -62,7 +64,7 @@ describe("types", () => {
 
 	it("honours treatNullAsMissing in the return type", () => {
 		expectTypeOf(
-			safeGet(n, "bio", "none", { treatNullAsMissing: true })
+			safeGet(n, "bio", "none", { treatNullAsMissing: true }),
 		).toEqualTypeOf<string>();
 		expectTypeOf(safeGet(n, "bio", null)).toEqualTypeOf<string | null>();
 	});

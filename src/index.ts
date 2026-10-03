@@ -26,14 +26,15 @@ type MaxDepth = 10;
 export type Path<T, D extends number = MaxDepth> = [D] extends [never]
 	? never
 	: NonNullable<T> extends infer U
-	? U extends Primitive
-		? never
-		: U extends readonly (infer E)[]
-		? `${number}` | `${number}.${Path<E, Prev[D]>}`
-		: {
-				[K in keyof U & (string | number)]: `${K}` | `${K}.${Path<U[K], Prev[D]>}`;
-		  }[keyof U & (string | number)]
-	: never;
+		? U extends Primitive
+			? never
+			: U extends readonly (infer E)[]
+				? `${number}` | `${number}.${Path<E, Prev[D]>}`
+				: {
+						[K in keyof U & (string | number)]:
+							`${K}` | `${K}.${Path<U[K], Prev[D]>}`;
+					}[keyof U & (string | number)]
+		: never;
 
 /** Converts bracket notation (`a[0].b`) into dot notation (`a.0.b`). */
 export type NormalizePath<P extends string> =
@@ -61,16 +62,16 @@ export type PathValue<T, P extends string> = T extends unknown
 type Step<T, Key extends string> = T extends null | undefined
 	? undefined
 	: T extends readonly (infer E)[]
-	? Key extends `${number}`
-		? E | undefined
-		: never
-	: Key extends keyof T
-	? T[Key]
-	: Key extends `${infer N extends number}`
-	? N extends keyof T
-		? T[N]
-		: never
-	: never;
+		? Key extends `${number}`
+			? E | undefined
+			: never
+		: Key extends keyof T
+			? T[Key]
+			: Key extends `${infer N extends number}`
+				? N extends keyof T
+					? T[N]
+					: never
+				: never;
 
 export interface SafeGetOptions {
 	treatNullAsMissing?: boolean;
@@ -79,9 +80,8 @@ export interface SafeGetOptions {
 }
 
 /** `P` if it names a valid path into `T` (dot or bracket notation), else `never`. */
-export type ValidPath<T, P extends string> = NormalizePath<P> extends Path<T>
-	? P
-	: never;
+export type ValidPath<T, P extends string> =
+	NormalizePath<P> extends Path<T> ? P : never;
 
 /** Removes the values the default replaces: `undefined`, plus `null` if opted in. */
 export type Resolved<V, O extends SafeGetOptions> = O extends {
@@ -94,38 +94,38 @@ export type Resolved<V, O extends SafeGetOptions> = O extends {
 export function safeGet<
 	T,
 	P extends string & Path<T>,
-	O extends SafeGetOptions = SafeGetOptions
+	O extends SafeGetOptions = SafeGetOptions,
 >(
 	obj: T,
 	path: P,
 	defaultValue: Resolved<PathValue<T, P>, O>,
-	options?: O
+	options?: O,
 ): Resolved<PathValue<T, P>, O>;
 
 export function safeGet<T, P extends string & Path<T>>(
 	obj: T,
 	path: P,
 	defaultValue?: undefined,
-	options?: SafeGetOptions
+	options?: SafeGetOptions,
 ): PathValue<T, P> | undefined;
 
 // Paths using bracket notation, validated against `T`.
 export function safeGet<
 	T,
 	P extends string,
-	O extends SafeGetOptions = SafeGetOptions
+	O extends SafeGetOptions = SafeGetOptions,
 >(
 	obj: T,
 	path: ValidPath<T, P>,
 	defaultValue: Resolved<PathValue<T, NormalizePath<P>>, O>,
-	options?: O
+	options?: O,
 ): Resolved<PathValue<T, NormalizePath<P>>, O>;
 
 export function safeGet<T, P extends string>(
 	obj: T,
 	path: ValidPath<T, P>,
 	defaultValue?: undefined,
-	options?: SafeGetOptions
+	options?: SafeGetOptions,
 ): PathValue<T, NormalizePath<P>> | undefined;
 
 // Dynamic (non-literal) paths cannot be checked at compile time.
@@ -133,14 +133,14 @@ export function safeGet<P extends string>(
 	obj: any,
 	path: string extends P ? P : never,
 	defaultValue?: any,
-	options?: SafeGetOptions
+	options?: SafeGetOptions,
 ): any;
 
 export function safeGet(
 	obj: any,
 	path: string,
 	defaultValue?: any,
-	options: SafeGetOptions = {}
+	options: SafeGetOptions = {},
 ) {
 	if (!obj || typeof obj !== "object") {
 		if (options.debug) {
@@ -169,7 +169,7 @@ export function safeGet(
 			if (options.debug) {
 				console.warn(
 					`[safeGet] Stopped at key "${key}" because current value is`,
-					current
+					current,
 				);
 			}
 			return defaultValue;

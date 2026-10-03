@@ -8,7 +8,7 @@ const safeGet = typedSafeGet as (
 	obj: any,
 	path: string,
 	defaultValue?: any,
-	options?: SafeGetOptions
+	options?: SafeGetOptions,
 ) => any;
 
 describe("safeGet", () => {
@@ -94,7 +94,7 @@ describe("safeGet", () => {
 
 		it("returns default value when treatNullAsMissing is true", () => {
 			expect(
-				safeGet(obj, "user.bio", "default", { treatNullAsMissing: true })
+				safeGet(obj, "user.bio", "default", { treatNullAsMissing: true }),
 			).toBe("default");
 		});
 	});
@@ -108,7 +108,9 @@ describe("safeGet", () => {
 
 		it("returns default value when treatEmptyStringAsMissing is true", () => {
 			expect(
-				safeGet(obj, "user.bio", "default", { treatEmptyStringAsMissing: true })
+				safeGet(obj, "user.bio", "default", {
+					treatEmptyStringAsMissing: true,
+				}),
 			).toBe("default");
 		});
 	});
@@ -119,7 +121,7 @@ describe("safeGet", () => {
 			safeGet(null, "a.b", "default", { debug: true });
 			expect(spy).toHaveBeenCalledWith(
 				expect.stringContaining("Target object is not an object"),
-				null
+				null,
 			);
 			spy.mockRestore();
 		});
@@ -130,7 +132,7 @@ describe("safeGet", () => {
 			safeGet(obj, "a.b", "default", { debug: true });
 			expect(spy).toHaveBeenCalledWith(
 				expect.stringContaining('Stopped at key "b"'),
-				null
+				null,
 			);
 			spy.mockRestore();
 		});
@@ -140,7 +142,7 @@ describe("safeGet", () => {
 			const obj = { a: {} };
 			safeGet(obj, "a.b", "default", { debug: true });
 			expect(spy).toHaveBeenCalledWith(
-				expect.stringContaining('Key "b" does not exist')
+				expect.stringContaining('Key "b" does not exist'),
 			);
 			spy.mockRestore();
 		});
@@ -171,7 +173,7 @@ describe("safeGet", () => {
 			safeGet(obj, "a..b", "D", { debug: true });
 			expect(spy).toHaveBeenCalledWith(
 				expect.stringContaining("Malformed path"),
-				"a..b"
+				"a..b",
 			);
 			spy.mockRestore();
 		});
@@ -252,13 +254,19 @@ describe("safeGet", () => {
 		const obj = { a: null, b: "", c: 0, d: false };
 
 		it("treats other falsy values as present", () => {
-			const opts = { treatNullAsMissing: true, treatEmptyStringAsMissing: true };
+			const opts = {
+				treatNullAsMissing: true,
+				treatEmptyStringAsMissing: true,
+			};
 			expect(safeGet(obj, "c", "D", opts)).toBe(0);
 			expect(safeGet(obj, "d", "D", opts)).toBe(false);
 		});
 
 		it("applies both flags together", () => {
-			const opts = { treatNullAsMissing: true, treatEmptyStringAsMissing: true };
+			const opts = {
+				treatNullAsMissing: true,
+				treatEmptyStringAsMissing: true,
+			};
 			expect(safeGet(obj, "a", "D", opts)).toBe("D");
 			expect(safeGet(obj, "b", "D", opts)).toBe("D");
 		});

@@ -28,29 +28,29 @@ npm install safe-object-access
 ### Basic Usage
 
 ```typescript
-import { safeGet } from 'safe-object-access';
+import { safeGet } from "safe-object-access";
 
 const user = {
-  profile: {
-    name: 'Alice',
-    settings: {
-      theme: 'dark' as 'dark' | 'light'
-    }
-  },
-  tags: ['admin', 'editor']
+	profile: {
+		name: "Alice",
+		settings: {
+			theme: "dark" as "dark" | "light",
+		},
+	},
+	tags: ["admin", "editor"],
 };
 
 //  Fully typed string path with autocomplete!
 // inferred type: "dark" | "light" | undefined
-const theme = safeGet(user, 'profile.settings.theme'); 
+const theme = safeGet(user, "profile.settings.theme");
 
 //  Supports Array indices (dot or bracket)
 // inferred type: string | undefined
-const firstTag = safeGet(user, 'tags[0]'); 
+const firstTag = safeGet(user, "tags[0]");
 
 // Default values handled correctly
 // inferred type: "dark" | "light"
-const safeTheme = safeGet(user, 'profile.settings.theme', 'light');
+const safeTheme = safeGet(user, "profile.settings.theme", "light");
 ```
 
 ### Advanced Usage
@@ -58,23 +58,27 @@ const safeTheme = safeGet(user, 'profile.settings.theme', 'light');
 You can pass an optional `options` object as the fourth argument to customize how values are retrieved.
 
 #### Handling `null` or Empty Strings
+
 By default, `safeGet` only uses the default value if the result is `undefined`. Use these flags to handle other "empty" states:
 
 ```typescript
 const data = { bio: null, draft: "" };
 
 // Treat null as missing
-const bio = safeGet(data, 'bio', 'No bio yet', { treatNullAsMissing: true });
+const bio = safeGet(data, "bio", "No bio yet", { treatNullAsMissing: true });
 
 // Treat empty string as missing
-const draft = safeGet(data, 'draft', 'Start typing...', { treatEmptyStringAsMissing: true });
+const draft = safeGet(data, "draft", "Start typing...", {
+	treatEmptyStringAsMissing: true,
+});
 ```
 
 #### Debugging Paths
+
 If a path is returning a default value and you don't know why, enable `debug` mode to see exactly where the traversal stopped in the console.
 
 ```typescript
-safeGet(user, 'profile.addr.city', 'N/A', { debug: true });
+safeGet(user, "profile.addr.city", "N/A", { debug: true });
 // Console: [safeGet] Key "addr" does not exist on object.
 ```
 
@@ -83,21 +87,21 @@ safeGet(user, 'profile.addr.city', 'N/A', { debug: true });
 This library is perfect for React applications where data shapes might be unpredictable or when mapping over keys.
 
 ```tsx
-import { safeGet } from 'safe-object-access';
+import { safeGet } from "safe-object-access";
 
 interface UserData {
-  user: {
-    details?: {
-      bio?: string;
-    };
-  };
+	user: {
+		details?: {
+			bio?: string;
+		};
+	};
 }
 
 const UserBio = ({ data }: { data: UserData }) => {
-  // TypeScript will autocomplete the path "user.details.bio"
-  const bio = safeGet(data, 'user.details.bio', 'No bio available');
+	// TypeScript will autocomplete the path "user.details.bio"
+	const bio = safeGet(data, "user.details.bio", "No bio available");
 
-  return <p>{bio}</p>;
+	return <p>{bio}</p>;
 };
 ```
 
@@ -111,12 +115,12 @@ Only **own, enumerable-or-not properties of objects and arrays** are read. This 
 
 ## When to use vs. Optional Chaining
 
-| Feature | `safeGet(obj, 'path.to.key')` | Optional Chaining (`obj?.path?.to?.key`) |
-| :--- | :--- | :--- |
-| **Dynamic Paths** | ✅ **Best Use Case**. Can use variables for paths. | ❌ Not possible. Paths must be hardcoded. |
-| **Type Safety** | ✅ Types validated against string path. | ✅ Standard TS behavior. |
-| **Syntax** | Function call. | Native operator. |
-| **Use Case** | CMS content, deeply nested config, dynamic property access. | Standard static property access. |
+| Feature           | `safeGet(obj, 'path.to.key')`                               | Optional Chaining (`obj?.path?.to?.key`)  |
+| :---------------- | :---------------------------------------------------------- | :---------------------------------------- |
+| **Dynamic Paths** | ✅ **Best Use Case**. Can use variables for paths.          | ❌ Not possible. Paths must be hardcoded. |
+| **Type Safety**   | ✅ Types validated against string path.                     | ✅ Standard TS behavior.                  |
+| **Syntax**        | Function call.                                              | Native operator.                          |
+| **Use Case**      | CMS content, deeply nested config, dynamic property access. | Standard static property access.          |
 
 ### When NOT to use `safe-object-access`
 
@@ -129,15 +133,15 @@ Only **own, enumerable-or-not properties of objects and arrays** are read. This 
 
 - **`obj`**: The source object.
 - **`path`**: A string representing the path (e.g., `'a.b.c'` or `'a[0].b'`). Strictly typed to conform to `T`. Supported syntax:
-    - dot segments (`a.b`) and bracket indices (`a[0]`)
-    - quoted bracket keys for special characters (`a["b.c"]`, `a['it\'s']`)
-    - backslash escapes (`a\.b` is the single key `a.b`)
-    - empty segments (`""`, `a..b`, `a.`, `a[]`) are malformed and return `defaultValue`; use `a['']` to reach an empty-string key.
+  - dot segments (`a.b`) and bracket indices (`a[0]`)
+  - quoted bracket keys for special characters (`a["b.c"]`, `a['it\'s']`)
+  - backslash escapes (`a\.b` is the single key `a.b`)
+  - empty segments (`""`, `a..b`, `a.`, `a[]`) are malformed and return `defaultValue`; use `a['']` to reach an empty-string key.
 - **`defaultValue`** (optional): A value to return if the resolution fails or returns `undefined`.
 - **`options`** (optional):
-    - **`treatNullAsMissing`**: (boolean) If `true`, returns `defaultValue` when the resolved value is `null`.
-    - **`treatEmptyStringAsMissing`**: (boolean) If `true`, returns `defaultValue` when the resolved value is `""`.
-    - **`debug`**: (boolean) If `true`, logs helpful debugging information to the console if the traversal fails.
+  - **`treatNullAsMissing`**: (boolean) If `true`, returns `defaultValue` when the resolved value is `null`.
+  - **`treatEmptyStringAsMissing`**: (boolean) If `true`, returns `defaultValue` when the resolved value is `""`.
+  - **`debug`**: (boolean) If `true`, logs helpful debugging information to the console if the traversal fails.
 
 Returns the value at the path (strictly typed) or the default value.
 
