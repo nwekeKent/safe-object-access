@@ -1,5 +1,5 @@
 import { describe, it, expectTypeOf } from "vitest";
-import { safeGet, type Path, type PathValue } from "./index";
+import { safeGet, safeHas, type Path, type PathValue } from "./index";
 
 interface Node {
 	id: number;
@@ -83,5 +83,23 @@ describe("types", () => {
 	it("exposes Path and PathValue", () => {
 		expectTypeOf<Path<{ a: { b: 1 } }>>().toEqualTypeOf<"a" | "a.b">();
 		expectTypeOf<PathValue<{ a: { b: 1 } }, "a.b">>().toEqualTypeOf<1>();
+	});
+});
+
+describe("safeHas types", () => {
+	it("validates literal paths and returns boolean", () => {
+		expectTypeOf(safeHas(n, "opt.b.c")).toEqualTypeOf<boolean>();
+		expectTypeOf(safeHas(n, "children[0].id")).toEqualTypeOf<boolean>();
+		// @ts-expect-error unknown path
+		safeHas(n, "idd");
+		expectTypeOf(safeHas(n, dynamicPath)).toEqualTypeOf<boolean>();
+	});
+});
+
+describe("dotted keys", () => {
+	it("are not offered as typed paths", () => {
+		expectTypeOf<Path<{ a: { "x.y": 1; z: 2 } }>>().toEqualTypeOf<
+			"a" | "a.z"
+		>();
 	});
 });

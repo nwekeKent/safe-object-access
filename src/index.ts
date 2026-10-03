@@ -1,4 +1,4 @@
-import { getPathKeys } from "./path-cache";
+import { resolvePath, warn } from "./resolve";
 
 type Primitive =
 	| string
@@ -31,10 +31,19 @@ export type Path<T, D extends number = MaxDepth> = [D] extends [never]
 			: U extends readonly (infer E)[]
 				? `${number}` | `${number}.${Path<E, Prev[D]>}`
 				: {
-						[K in keyof U & (string | number)]:
-							`${K}` | `${K}.${Path<U[K], Prev[D]>}`;
-					}[keyof U & (string | number)]
+						[K in PathKeys<U>]: `${K}` | `${K}.${Path<U[K], Prev[D]>}`;
+					}[PathKeys<U>]
 		: never;
+
+/**
+ * Keys of `U` usable in a dot path. Keys containing a dot cannot be written
+ * as typed paths (they are reachable with a dynamic `a["x.y"]` path).
+ */
+type PathKeys<U> = {
+	[K in keyof U & (string | number)]: `${K}` extends `${string}.${string}`
+		? never
+		: K;
+}[keyof U & (string | number)];
 
 /** Converts bracket notation (`a[0].b`) into dot notation (`a.0.b`). */
 export type NormalizePath<P extends string> =
@@ -90,6 +99,10 @@ export type Resolved<V, O extends SafeGetOptions> = O extends {
 	? Exclude<V, undefined | null>
 	: Exclude<V, undefined>;
 
+export interface SafeHasOptions {
+	debug?: boolean;
+}
+
 // Dot-notation paths (autocomplete).
 export function safeGet<
 	T,
@@ -142,60 +155,62 @@ export function safeGet(
 	defaultValue?: any,
 	options: SafeGetOptions = {},
 ) {
-	if (!obj || typeof obj !== "object") {
-		if (options.debug) {
-			console.warn(`[safeGet] Target object is not an object:`, obj);
-		}
+	const resolution = resolvePath(obj, path);
+
+	if (!resolution.found) {
+		if (options.debug) warn("safeGet", resolution);
 		return defaultValue;
 	}
 
-	const keys = typeof path === "string" ? getPathKeys(path) : null;
+	const { value } = resolution;
 
-	if (keys === null) {
-		if (options.debug) {
-			console.warn(`[safeGet] Malformed path:`, path);
-		}
+	if (value === undefined) {
 		return defaultValue;
 	}
 
-	let current: any = obj;
-
-	for (const key of keys) {
-		if (
-			current === null ||
-			current === undefined ||
-			typeof current !== "object"
-		) {
-			if (options.debug) {
-				console.warn(
-					`[safeGet] Stopped at key "${key}" because current value is`,
-					current,
-				);
-			}
-			return defaultValue;
-		}
-
-		if (Object.hasOwn(current, key)) {
-			current = current[key];
-		} else {
-			if (options.debug) {
-				console.warn(`[safeGet] Key "${key}" does not exist on object.`);
-			}
-			return defaultValue;
-		}
-	}
-
-	if (current === undefined) {
+	if (value === null && options.treatNullAsMissing) {
 		return defaultValue;
 	}
 
-	if (current === null && options.treatNullAsMissing) {
+	if (value === "" && options.treatEmptyStringAsMissing) {
 		return defaultValue;
 	}
 
-	if (current === "" && options.treatEmptyStringAsMissing) {
-		return defaultValue;
-	}
+	return value;
+}
 
-	return current;
+// Dot-notation paths (autocomplete).
+export function safeHas<T, P extends string & Path<T>>(
+	obj: T,
+	path: P,
+	options?: SafeHasOptions,
+): boolean;
+
+// Paths using bracket notation, validated against `T`.
+export function safeHas<T, P extends string>(
+	obj: T,
+	path: ValidPath<T, P>,
+	options?: SafeHasOptions,
+): boolean;
+
+// Dynamic (non-literal) paths cannot be checked at compile time.
+export function safeHas<P extends string>(
+	obj: any,
+	path: string extends P ? P : never,
+	options?: SafeHasOptions,
+): boolean;
+
+/**
+ * Returns `true` when every key in `path` exists as an own property, even if
+ * the value is `undefined` or `null`. Unlike `safeGet`, this distinguishes a
+ * missing key from a key explicitly set to `undefined`.
+ */
+export function safeHas(
+	obj: any,
+	path: string,
+	options: SafeHasOptions = {},
+): boolean {
+	const resolution = resolvePath(obj, path);
+	if (!resolution.found && options.debug) warn("safeHas", resolution);
+	return resolution.found;
 }

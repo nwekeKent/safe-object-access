@@ -13,6 +13,8 @@
 
 ### Fixed
 
+- `Path` no longer offers keys containing dots (e.g. `a.x.y` for a key `"x.y"`),
+  which could not resolve at runtime.
 - Keys containing dots are reachable via `a\.b` or `a["b.c"]`.
 - Malformed paths (`""`, `a..b`, `a.`, `a[]`, unclosed brackets) return the
   default value instead of being silently normalised. Previously `""` resolved
@@ -22,6 +24,8 @@
 
 ### Added
 
+- `safeHas(obj, path)`: true when the path exists as own properties, even if the
+  value is `undefined` or `null`.
 - Typed bracket-notation paths (`children[0].id`).
 - `Path` traverses optional/nullable properties and recursive types
   (depth-capped at 10).

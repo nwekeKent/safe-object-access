@@ -147,6 +147,17 @@ Returns the value at the path (strictly typed) or the default value.
 
 With a default, the return type excludes `undefined` (and `null` when `treatNullAsMissing: true`). Literal paths that don't exist on `T` are compile errors; non-literal `string` paths are accepted and typed as `any`.
 
+### `safeHas<T, P>(obj, path, options?)`
+
+Returns `true` when every key in `path` exists as an own property, even if the value is `undefined` or `null`. Use it when `safeGet` can't tell you whether a key is missing or explicitly `undefined`.
+
+```typescript
+const data = { a: { b: undefined } };
+safeGet(data, "a.b", "D"); // 'D'
+safeHas(data, "a.b"); // true
+safeHas(data, "a.c"); // false
+```
+
 ## 🤝 Contributing
 
 Found a bug or have a feature request?
