@@ -15,6 +15,7 @@ A robust, **strongly-typed** TypeScript utility for safely accessing deeply nest
 - ⚡️ **High Performance**: Built-in path memoization for lightning-fast repeated access in React render loops.
 - 🛠️ **Configurable Fallbacks**: Optionally treat `null` or empty strings as missing values.
 - 🔍 **Debug Mode**: Detailed console warnings to pinpoint exactly where path traversal fails.
+- 🧰 **Get, Has, Set**: `safeGet`, `safeHas`, `safeGetOrThrow` and an immutable `safeSet`, plus runtime validation with `guard`.
 - 🚫 **Prototype Protection**: Automatically prevents access to `__proto__`, `constructor`, and `prototype` for security.
 
 ## Installation
@@ -135,6 +136,29 @@ Only **own, enumerable-or-not properties of objects and arrays** are read. This 
 | **Type Safety**   | ✅ Types validated against string path.                     | ✅ Standard TS behavior.                  |
 | **Syntax**        | Function call.                                              | Native operator.                          |
 | **Use Case**      | CMS content, deeply nested config, dynamic property access. | Standard static property access.          |
+
+## Comparison with alternatives
+
+Checked against `lodash.get` 4.x and `dlv` 1.x.
+
+|                                                      |    `safe-object-access`     |                           `lodash.get`                           |                `dlv`                | Optional chaining |
+| :--------------------------------------------------- | :-------------------------: | :--------------------------------------------------------------: | :---------------------------------: | :---------------: |
+| Dynamic string paths                                 |             ✅              |                                ✅                                |                 ✅                  |        ❌         |
+| Path autocomplete and typo errors                    | ✅ any depth (capped at 10) | ⚠️ `@types/lodash` types shallow paths only; typos aren't errors |                 ❌                  |        ✅         |
+| Return type inferred from the path                   |             ✅              |              ⚠️ shallow paths only, deeper is `any`              |                 ❌                  |        ✅         |
+| Bracket notation (`a[0].b`)                          |          ✅ typed           |                                ✅                                | ❌ (`a[0]` resolves to `undefined`) |        ✅         |
+| Keys containing dots                                 |   ✅ (`a["b.c"]`, `a\.b`)   |                                ✅                                |                 ❌                  |        ✅         |
+| Reads inherited members (`constructor`, `__proto__`) |   ❌ own properties only    |                         ✅ returns them                          |           ✅ returns them           |        ✅         |
+| Traverses into strings (`'name.length'`)             |             ❌              |                                ✅                                |                 ✅                  |        ✅         |
+| Treat `null` / `""` as missing                       |         ✅ options          |                ❌ (default only for `undefined`)                 |                 ❌                  |       `??`        |
+| Runtime validation (`guard`)                         |             ✅              |                                ❌                                |                 ❌                  |        ❌         |
+| Throwing variant                                     |     ✅ `safeGetOrThrow`     |                                ❌                                |                 ❌                  |        ❌         |
+| Distinguish missing from `undefined`                 |        ✅ `safeHas`         |                            ✅ `_.has`                            |                 ❌                  |       `in`        |
+| Typed, immutable set                                 |        ✅ `safeSet`         |                        ⚠️ `_.set` mutates                        |                 ❌                  |        ❌         |
+
+**Choose `safe-object-access` when** paths are dynamic or come from config, a CMS or user input, you want type-checked paths and results, or you want lookups that can never reach `__proto__` or `constructor`.
+
+**Choose something else when** the path is static and short (use optional chaining), you only need a few bytes of plain dot-path lookup (`dlv`), or you already depend on lodash and don't need typed paths.
 
 ### When NOT to use `safe-object-access`
 

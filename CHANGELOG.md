@@ -38,5 +38,6 @@
 - `Path` traverses optional/nullable properties and recursive types
   (depth-capped at 10).
 - `NormalizePath`, `ValidPath` and `Resolved` type exports.
+- README comparison with `lodash.get`, `dlv` and optional chaining.
 - CI, coverage thresholds, Prettier, `engines` (Node >= 16.9) and corrected
   `exports` type conditions.
