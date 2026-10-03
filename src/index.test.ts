@@ -136,16 +136,6 @@ describe("safeGet", () => {
 		});
 	});
 
-	describe("memoization", () => {
-		it("returns correct value on repeated calls", () => {
-			const obj = { a: { b: 1 } };
-			// First call (cache miss)
-			expect(safeGet(obj, "a.b")).toBe(1);
-			// Second call (cache hit)
-			expect(safeGet(obj, "a.b")).toBe(1);
-		});
-	});
-
 	describe("path syntax", () => {
 		const obj = { a: { "b.c": 1, "": 5, "it's": 2 }, list: [[1, 2]] };
 

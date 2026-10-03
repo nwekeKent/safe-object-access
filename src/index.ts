@@ -1,4 +1,4 @@
-import { parsePath } from "./parse-path";
+import { getPathKeys } from "./path-cache";
 
 type Primitive = string | number | boolean | null | undefined | symbol | Date;
 
@@ -35,8 +35,6 @@ export interface SafeGetOptions {
 	debug?: boolean;
 }
 
-const pathCache = new Map<string, string[] | null>();
-
 export function safeGet<T, P extends Path<T>>(
 	obj: T,
 	path: P,
@@ -71,11 +69,7 @@ export function safeGet(
 		return defaultValue;
 	}
 
-	let keys = pathCache.get(path);
-	if (keys === undefined) {
-		keys = typeof path === "string" ? parsePath(path) : null;
-		pathCache.set(path, keys);
-	}
+	const keys = typeof path === "string" ? getPathKeys(path) : null;
 
 	if (keys === null) {
 		if (options.debug) {
